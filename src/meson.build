@@ -1,7 +1,7 @@
-Demo_sources = ['demo_sparse.cpp']
+demo_sparse_sources = ['demo_sparse.cpp']
 
-shared_library('Demo',
-	       sources: [Demo_sources],
+shared_library('demo_sparse',
+	       sources: [demo_sparse_sources],
 	       include_directories: mma_include_directories)
 
 	

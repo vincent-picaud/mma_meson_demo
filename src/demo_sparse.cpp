@@ -5,18 +5,18 @@
 #include "string.h"
 
 /* Return the version of Library Link */
-extern "C" mint WolframLibrary_getVersion() { return WolframLibraryVersion; }
+extern "C" DLLEXPORT mint WolframLibrary_getVersion() { return WolframLibraryVersion; }
 
 /* Initialize Library */
-extern "C" int WolframLibrary_initialize(WolframLibraryData libData) { return LIBRARY_NO_ERROR; }
+extern "C" DLLEXPORT int WolframLibrary_initialize(WolframLibraryData libData) { return LIBRARY_NO_ERROR; }
 
 /* Uninitialize Library */
-extern "C" void WolframLibrary_uninitialize(WolframLibraryData libData) { return; }
+extern "C" DLLEXPORT void WolframLibrary_uninitialize(WolframLibraryData libData) { return; }
 
 #define StringSameQ(a, b) (strcmp(a, b) == 0)
 
 /* Access to sparse properties and CSR data */
-extern "C" int sparse_properties(WolframLibraryData libData, mint Argc, MArgument* Args, MArgument Res)
+extern "C" DLLEXPORT int sparse_properties(WolframLibraryData libData, mint Argc, MArgument* Args, MArgument Res)
 {
   int err = LIBRARY_NO_ERROR;
   char* what;
@@ -75,7 +75,7 @@ extern "C" int sparse_properties(WolframLibraryData libData, mint Argc, MArgumen
   return err;
 }
 
-extern "C" int sparse_modify_values(WolframLibraryData libData, mint Argc, MArgument* Args, MArgument Res)
+extern "C" DLLEXPORT int sparse_modify_values(WolframLibraryData libData, mint Argc, MArgument* Args, MArgument Res)
 {
   int err = 0;
   mint i, nz;

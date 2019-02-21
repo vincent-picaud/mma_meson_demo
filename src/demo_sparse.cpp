@@ -16,7 +16,8 @@ extern "C" DLLEXPORT void WolframLibrary_uninitialize(WolframLibraryData libData
 #define StringSameQ(a, b) (strcmp(a, b) == 0)
 
 /* Access to sparse properties and CSR data */
-extern "C" DLLEXPORT int sparse_properties(WolframLibraryData libData, mint Argc, MArgument* Args, MArgument Res)
+extern "C"
+DLLEXPORT int sparse_properties(WolframLibraryData libData, mint Argc, MArgument* Args, MArgument Res)
 {
   int err = LIBRARY_NO_ERROR;
   char* what;

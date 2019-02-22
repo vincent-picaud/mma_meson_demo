@@ -1,5 +1,6 @@
+#+OPTIONS: H:3 toc:t num:t \n:nil ::t |:t ^:{} -:t f:t *:t tex:t d:t tags:not-in-toc
 #+TITLE: MMA + Meson proof of concept
-
+  
 * Caveat
 
 Do not modify this =README.md= file: it is *automatically* generated
@@ -13,16 +14,37 @@ repo is my effort and a (possible) proof of concept for this.
 
 * How to use it?
 
-Open =./sandbox/demo_sparse.wls= with Mathematica and check if its
-works. It should clone this git repo (in the system temporary
-directory) and do the build using Meson. 
+** Using =./sandbox/demo_sparse.wls= mma file
 
-The =sparseDemoPackage= is generated, opened and a simple function using
-the generated dynamic library is tested.
+Open =./sandbox/demo_sparse.wls= with Mathematica and follow instructions. It should:
+- clone this git repo (in the system temporary directory)
+- do the build using Meson. 
 
-If the package does not work you can try to build it manually using
-=./sandbox/demo_sparse_manual.wls.= This file uses the =CreateLibrary= and
-=LibraryFunctionLoad= mma functions instead of the meson build process.
+ The =sparseDemoPackage= is generated, opened and a simple function using
+ the generated dynamic library is tested.
+
+ If the package does not work you can try to build it manually using
+ =./sandbox/demo_sparse_manual.wls.= This file uses the =CreateLibrary= and
+ =LibraryFunctionLoad= mma functions instead of the meson build process.
+
+** Using command line
+
+#+BEGIN_SRC sh :eval never
+git clone git@github.com:vincent-picaud/mma_meson_demo.git
+cd mma_meson_demo
+meson build 
+cd build
+ninja install
+#+END_SRC
+
+Then, under Mathematica:
+
+#+BEGIN_SRC wolfram :eval never
+<<"sparseDemoPackage`"
+?sparseDemoPackage`*
+s=SparseArray[{{1,0,0},{2 ,0,3}}]
+test[s] // TableForm
+#+END_SRC
 
 * Help needed
 

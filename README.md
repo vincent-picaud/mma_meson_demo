@@ -1,20 +1,22 @@
 
 # Table of Contents
 
-1.  [Caveat](#org889aba4)
-2.  [What is it?](#orgff69bb5)
-3.  [How to use it?](#orge996d0a)
-4.  [Help needed](#org8c7c702)
-5.  [Main files](#org7f48b60)
-6.  [Some details](#orga41c70d)
-    1.  [`config.wls`](#org1637a5a)
-    2.  [Meson files](#org78ca1bd)
-        1.  [`./meson.build`](#org2d51812)
-        2.  [`./src/meson.build`](#org7f62a66)
+1.  [Caveat](#orgb618e98)
+2.  [What is it?](#org4807fa2)
+3.  [How to use it?](#org4eb60dd)
+    1.  [Using `./sandbox/demo_sparse.wls` mma file](#org821d20e)
+    2.  [Using command line](#orge7a51a1)
+4.  [Help needed](#org2cf2ae0)
+5.  [Main files](#orgb51a1b4)
+6.  [Some details](#orgdd5cdb5)
+    1.  [`config.wls`](#orge7f2821)
+    2.  [Meson files](#org74f696c)
+        1.  [`./meson.build`](#orgd6bd11d)
+        2.  [`./src/meson.build`](#org0efc28f)
 
 
 
-<a id="org889aba4"></a>
+<a id="orgb618e98"></a>
 
 # Caveat
 
@@ -22,7 +24,7 @@ Do not modify this `README.md` file: it is **automatically** generated
 from `README.org`. Modify `README.org` instead (Emacs + OrgMode)
 
 
-<a id="orgff69bb5"></a>
+<a id="org4807fa2"></a>
 
 # What is it?
 
@@ -31,23 +33,47 @@ The goal is to use the [Meson build system](https://mesonbuild.com/) to define a
 repo is my effort and a (possible) proof of concept for this.
 
 
-<a id="orge996d0a"></a>
+<a id="org4eb60dd"></a>
 
 # How to use it?
 
-Open `./sandbox/demo_sparse.wls` with Mathematica and check if its
-works. It should clone this git repo (in the system temporary
-directory) and do the build using Meson. 
 
-The `sparseDemoPackage` is generated, opened and a simple function using
-the generated dynamic library is tested.
+<a id="org821d20e"></a>
 
-If the package does not work you can try to build it manually using
-`./sandbox/demo_sparse_manual.wls.` This file uses the `CreateLibrary` and
-`LibraryFunctionLoad` mma functions instead of the meson build process.
+## Using `./sandbox/demo_sparse.wls` mma file
+
+Open `./sandbox/demo_sparse.wls` with Mathematica and follow instructions. It should:
+
+-   clone this git repo (in the system temporary directory)
+-   do the build using Meson. 
+    
+    The `sparseDemoPackage` is generated, opened and a simple function using
+    the generated dynamic library is tested.
+    
+    If the package does not work you can try to build it manually using
+    `./sandbox/demo_sparse_manual.wls.` This file uses the `CreateLibrary` and
+    `LibraryFunctionLoad` mma functions instead of the meson build process.
 
 
-<a id="org8c7c702"></a>
+<a id="orge7a51a1"></a>
+
+## Using command line
+
+    git clone git@github.com:vincent-picaud/mma_meson_demo.git
+    cd mma_meson_demo
+    meson build 
+    cd build
+    ninja install
+
+Then, under Mathematica:
+
+    <<"sparseDemoPackage`"
+    ?sparseDemoPackage`*
+    s=SparseArray[{{1,0,0},{2 ,0,3}}]
+    test[s] // TableForm
+
+
+<a id="org2cf2ae0"></a>
 
 # Help needed
 
@@ -61,7 +87,7 @@ feedback (and probable fixes) concerning these platforms.
 -   [ ] Mathematica  + MacOS ?
 
 
-<a id="org7f48b60"></a>
+<a id="orgb51a1b4"></a>
 
 # Main files
 
@@ -70,20 +96,20 @@ feedback (and probable fixes) concerning these platforms.
 > -   README.md    <- **this** file
 > -   README.org   <- my org mode file (used to generate README.md)
 > -   sandbox/     <- contains mma files  to check if it works
->     -   demo<sub>sparse</sub><sub>manual.wls</sub> <- manual steps, without using meson
->     -   demo<sub>sparse.wls</sub>        <- automatic build using meson
+>     -   demo\_sparse\_manual.wls <- manual steps, without using meson
+>     -   demo\_sparse.wls        <- automatic build using meson
 > -   src/         <- package sources, including C++, C and mma codes
->     -   demo<sub>sparse.cpp</sub>        <- extracted from the official LibraryLink doc
+>     -   demo\_sparse.cpp        <- extracted from the official LibraryLink doc
 >     -   meson.build            <- meson build system file
->     -   sparseDemoPackage.wl   <- mma package using the dynamic lib generated from demo<sub>sparse.cpp</sub>
+>     -   sparseDemoPackage.wl   <- mma package using the dynamic lib generated from demo\_sparse.cpp
 
 
-<a id="orga41c70d"></a>
+<a id="orgdd5cdb5"></a>
 
 # Some details
 
 
-<a id="org1637a5a"></a>
+<a id="orge7f2821"></a>
 
 ## `config.wls`
 
@@ -106,14 +132,14 @@ Meson build process.
     Print[format[libraryLinkIncludeDirectories]<>";"<>libraryInstallDirectory<>";"<>packageInstallDirectory]
 
 
-<a id="org78ca1bd"></a>
+<a id="org74f696c"></a>
 
 ## Meson files
 
 I tried to only use the strict minimum to make it works.
 
 
-<a id="org2d51812"></a>
+<a id="orgd6bd11d"></a>
 
 ### `./meson.build`
 
@@ -140,7 +166,7 @@ I tried to only use the strict minimum to make it works.
     subdir('src')
 
 
-<a id="org7f62a66"></a>
+<a id="org0efc28f"></a>
 
 ### `./src/meson.build`
 

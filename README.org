@@ -1,11 +1,6 @@
 #+OPTIONS: H:3 toc:t num:t \n:nil ::t |:t ^:{} -:t f:t *:t tex:t d:t tags:not-in-toc
 #+TITLE: MMA + Meson proof of concept
   
-* Caveat
-
-Do not modify this =README.md= file: it is *automatically* generated
-from =README.org=. Modify =README.org= instead (Emacs + OrgMode)
-
 * What is it?
 
 The goal is to use the [[https://mesonbuild.com/][Meson build system]] to define an *easy to use* and
@@ -60,17 +55,17 @@ feedback (and probable fixes) concerning these platforms.
 * Main files
 
 #+BEGIN_QUOTE
-+ config.wls   <- mma script to extract configuration information
-+ meson.build  <- meson build system file
-+ README.md    <- *this* file
-+ README.org   <- my org mode file (used to generate README.md)
-+ sandbox/     <- contains mma files  to check if it works
-	+ demo_sparse_manual.wls <- manual steps, without using meson
-	+ demo_sparse.wls        <- automatic build using meson
-+ src/         <- package sources, including C++, C and mma codes
-	+ demo_sparse.cpp        <- extracted from the official LibraryLink doc 
-	+ meson.build            <- meson build system file
-	+ sparseDemoPackage.wl   <- mma package using the dynamic lib generated from demo_sparse.cpp
++ config.wls   <-- *mma script to extract configuration information*
++ meson.build  <-- *meson build system file*
++ README.md    <-- *this file*
++ README.org   <-- *my org mode file (used to generate README.md)*
++ sandbox/     <-- *contains mma files  to check if it works*
+	+ demo_sparse_manual.wls <-- *manual steps, without using meson*
+	+ demo_sparse.wls        <-- *automatic build using meson*
++ src/         <-- *package sources, including C++, C and mma codes*
+	+ demo_sparse.cpp        <-- *extracted from the official LibraryLink doc*
+	+ meson.build            <-- *meson build system file*
+	+ sparseDemoPackage.wl   <-- *mma package using the dynamic lib generated from demo_sparse.cpp*
 #+END_QUOTE
 
 * Some details 
@@ -122,10 +117,6 @@ mma_wolframscript = find_program('wolfram')
 maa_config = run_command(mma_wolframscript,'-script',files('config.wls'),
 			check: true)
 
-# if not maa_config.check()
-#   error('An error occurred running config.wls', 'cannot configure directories')
-# endif
-
 maa_config = maa_config.stdout().split(';')
 
 mma_include_directories = include_directories(maa_config.get(0).split(','))
@@ -155,11 +146,7 @@ shared_library('demo_sparse',
 	       install: true,
 	       install_dir: mma_library_install_dir)
 
-
-# CAVEAT: mma package file names must not include '_'. In the future a
-#         possible advice is to also use this Camel case convention
-#         for C/C++ file names (not the case here, "demo_sparse.cpp"
-#         use "_")
 install_data('sparseDemoPackage.wl',
 	     install_dir: mma_package_install_dir )
+	     
 #+END_SRC

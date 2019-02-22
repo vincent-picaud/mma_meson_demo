@@ -1,0 +1,143 @@
+#+TITLE: MMA + Meson proof of concept
+
+* Caveat
+
+Do not modify this =README.md= file: it is *automatically* generated
+from =README.org=. Modify =README.org= instead (Emacs + OrgMode)
+
+* What is it?
+
+The goal is to use the [[https://mesonbuild.com/][Meson build system]] to define an *easy to use* and
+*portable* solution for [[https://reference.wolfram.com/language/LibraryLink/tutorial/InteractionWithMathematica.html][Wolfram LibraryLink developments]]. This GitHub
+repo is my effort and a (possible) proof of concept for this.
+
+* How to use it?
+
+Open =./sandbox/demo_sparse.wls= with Mathematica and check if its
+works. It should clone this git repo (in the system temporary
+directory) and do the build using Meson. 
+
+The =sparseDemoPackage= is generated, opened and a simple function using
+the generated dynamic library is tested.
+
+If the package does not work you can try to build it manually using
+=./sandbox/demo_sparse_manual.wls.= This file uses the =CreateLibrary= and
+=LibraryFunctionLoad= mma functions instead of the meson build process.
+
+* Help needed
+
+For the moment I was only able to test it under Linux. I have no
+access to Windows nor MacOS platforms. It would we nice to have some
+feedback (and probable fixes) concerning these platforms.
+
+- [X] Mathematica v10.0 + Linux
+- [X] Mathematica v11.2 + Linux
+- [ ] Mathematica  + Windows ?
+- [ ] Mathematica  + MacOS ?
+
+* Main files
+
+#+BEGIN_QUOTE
++ config.wls   <- mma script to extract configuration information
++ meson.build  <- meson build system file
++ README.md    <- *this* file
++ README.org   <- my org mode file (used to generate README.md)
++ sandbox/     <- contains mma files  to check if it works
+	+ demo_sparse_manual.wls <- manual steps, without using meson
+	+ demo_sparse.wls        <- automatic build using meson
++ src/         <- package sources, including C++, C and mma codes
+	+ demo_sparse.cpp        <- extracted from the official LibraryLink doc 
+	+ meson.build            <- meson build system file
+	+ sparseDemoPackage.wl   <- mma package using the dynamic lib generated from demo_sparse.cpp
+#+END_QUOTE
+
+* Some details 
+
+** =config.wls=
+
+The =config.wls= file extracts the relevant information required by the
+Meson build process.
+
+#+BEGIN_SRC sh :exports results :wrap SRC wolfram :results drawer
+cat ./config.wls
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC wolfram
+libraryLinkIncludeDirectories={FileNameJoin[{$InstallationDirectory,"SystemFiles","IncludeFiles","C"}],
+			       FileNameJoin[{$InstallationDirectory,"SystemFiles","Links","MathLink","DeveloperKit",$SystemID,"CompilerAdditions"}]};
+libraryInstallDirectory=FileNameJoin[{$UserBaseDirectory,"SystemFiles","LibraryResource",$SystemID}];
+packageInstallDirectory=FileNameJoin[{$UserBaseDirectory,"Applications"}];
+
+(* buildDirectory=Environment["MESON_BUILD_ROOT"]; *)
+
+(* MMA < v10.1 does not have native StringRiffle *)
+stringRiffle[stringList_List,sep_String]:=TextString[stringList, ListFormat -> {"", sep, ""}];
+
+format[s_List]:=stringRiffle[s,","]
+
+(* stdout result *)
+Print[format[libraryLinkIncludeDirectories]<>";"<>libraryInstallDirectory<>";"<>packageInstallDirectory]
+
+#+END_SRC
+
+** Meson files 
+
+I tried to only use the strict minimum to make it works.
+
+*** =./meson.build=
+
+#+BEGIN_SRC sh :exports results :wrap SRC meson :results drawer
+cat ./meson.build
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC meson
+project('Meson_MMA_Demo', 'cpp')
+
+mma_wolframscript = find_program('wolfram')
+
+maa_config = run_command(mma_wolframscript,'-script',files('config.wls'),
+			check: true)
+
+# if not maa_config.check()
+#   error('An error occurred running config.wls', 'cannot configure directories')
+# endif
+
+maa_config = maa_config.stdout().split(';')
+
+mma_include_directories = include_directories(maa_config.get(0).split(','))
+mma_library_install_dir = maa_config.get(1).strip() # caveat: strip is mandatory to get 
+mma_package_install_dir = maa_config.get(2).strip() # a correct filename
+
+message('MMA library installation directory: '+mma_library_install_dir)
+message('MMA package installation directory: '+mma_package_install_dir)
+
+subdir('src')
+
+#+END_SRC
+
+*** =./src/meson.build=
+
+#+BEGIN_SRC sh :exports results :wrap SRC meson :results drawer
+cat ./src/meson.build
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC meson
+demo_sparse_sources = ['demo_sparse.cpp']
+
+shared_library('demo_sparse',
+	       sources: [demo_sparse_sources],
+	       include_directories: mma_include_directories,
+	       install: true,
+	       install_dir: mma_library_install_dir)
+
+
+# CAVEAT: mma package file names must not include '_'. In the future a
+#         possible advice is to also use this Camel case convention
+#         for C/C++ file names (not the case here, "demo_sparse.cpp"
+#         use "_")
+install_data('sparseDemoPackage.wl',
+	     install_dir: mma_package_install_dir )
+#+END_SRC

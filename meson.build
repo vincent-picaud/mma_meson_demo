@@ -1,9 +1,17 @@
 project('Meson_MMA_Demo', 'cpp')
 
-mma_wolframscript = find_program('wolfram')
+# This worked for my old mma v10.0
+#
+# mma_wolframscript = find_program('wolfram')
+#
+# maa_config = run_command(mma_wolframscript,'-script',files('config.wls'),
+# 			check: true)
 
-maa_config = run_command(mma_wolframscript,'-script',files('config.wls'),
-			check: true)
+# This is the current and portable option
+#
+mma_wolframscript = find_program('wolframscript')
+maa_config = run_command(mma_wolframscript,'-f',files('config.wls'),
+			 check: true)
 
 maa_config = maa_config.stdout().split(';')
 

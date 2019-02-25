@@ -50,7 +50,7 @@ feedback (and probable fixes) concerning these platforms.
 - [X] Mathematica v10.0 + Linux
 - [X] Mathematica v11.2 + Linux
 - [ ] Mathematica  + Windows ?
-- [ ] Mathematica  + MacOS ?
+- [X] Mathematica  + MacOS
 
 * Main files
 

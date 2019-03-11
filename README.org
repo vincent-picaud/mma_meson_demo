@@ -1,28 +1,13 @@
 #+OPTIONS: H:3 toc:t num:t \n:nil ::t |:t ^:{} -:t f:t *:t tex:t d:t tags:not-in-toc
-#+TITLE: MMA + Meson proof of concept
+#+TITLE: Wolfram LibraryLink + Meson
   
 * What is it?
 
 The goal is to use the [[https://mesonbuild.com/][Meson build system]] to define an *easy to use* and
-*portable* solution for [[https://reference.wolfram.com/language/LibraryLink/tutorial/InteractionWithMathematica.html][Wolfram LibraryLink developments]]. This GitHub
-repo is my effort and a (possible) proof of concept for this.
+*portable* solution for Mathematica [[https://reference.wolfram.com/language/LibraryLink/tutorial/InteractionWithMathematica.html][Wolfram LibraryLink developments]]. This GitHub
+repo is a small illustrative example.
 
 * How to use it?
-
-** Using =./sandbox/demo_sparse.wls= mma file
-
-Open =./sandbox/demo_sparse.wls= with Mathematica and follow instructions. It should:
-- clone this git repo (in the system temporary directory)
-- do the build using Meson. 
-
- The =sparseDemoPackage= is generated, opened and a simple function using
- the generated dynamic library is tested.
-
- If the package does not work you can try to build it manually using
- =./sandbox/demo_sparse_manual.wls.= This file uses the =CreateLibrary= and
- =LibraryFunctionLoad= mma functions instead of the meson build process.
-
-** Using command line
 
 #+BEGIN_SRC sh :eval never
 git clone git@github.com:vincent-picaud/mma_meson_demo.git
@@ -32,7 +17,7 @@ cd build
 ninja install
 #+END_SRC
 
-Then, under Mathematica:
+Then, under Mathematica (MMA):
 
 #+BEGIN_SRC wolfram :eval never
 <<"sparseDemoPackage`"
@@ -43,29 +28,27 @@ test[s] // TableForm
 
 * Help needed
 
-For the moment I was only able to test it under Linux. I have no
-access to Windows nor MacOS platforms. It would we nice to have some
-feedback (and probable fixes) concerning these platforms.
+I have no access to Windows. It would we nice to have some feedback
+concerning this platform.
 
 - [X] Mathematica v10.0 + Linux
 - [X] Mathematica v11.2 + Linux
-- [ ] Mathematica  + Windows ?
 - [X] Mathematica  + MacOS
+- [ ] Mathematica  + Windows ? 
 
 * Main files
 
 #+BEGIN_QUOTE
-+ config.wls   <-- *mma script to extract configuration information*
-+ meson.build  <-- *meson build system file*
-+ README.md    <-- *this file*
-+ README.org   <-- *my org mode file (used to generate README.md)*
-+ sandbox/     <-- *contains mma files  to check if it works*
-	+ demo_sparse_manual.wls <-- *manual steps, without using meson*
-	+ demo_sparse.wls        <-- *automatic build using meson*
-+ src/         <-- *package sources, including C++, C and mma codes*
-	+ demo_sparse.cpp        <-- *extracted from the official LibraryLink doc*
-	+ meson.build            <-- *meson build system file*
-	+ sparseDemoPackage.wl   <-- *mma package using the dynamic lib generated from demo_sparse.cpp*
++ config.wls   <-- *MMA script to extract configuration information*
++ meson.build  <-- *Meson build system file*
++ README.org   <-- *this file*
++ sandbox/     <-- *contains MMA files to check it works*
+	+ demo_sparse_manual.wls <-- *manual steps, without using Meson*
+	+ demo_sparse.wls        <-- *automatic build using Meson*
++ src/         <-- *package sources, including C++, C and MMA codes*
+	+ demo_sparse.cpp        <-- *one LibraryLink example (from the MMA official doc*)
+	+ meson.build            <-- *Meson build system file*
+	+ sparseDemoPackage.wl   <-- *MMA package using demo_sparse.cpp*
 #+END_QUOTE
 
 * Some details 

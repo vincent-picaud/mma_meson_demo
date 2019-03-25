@@ -1,3 +1,3 @@
-inc = include_directories('.')
+myLib_inc = include_directories('.')
 
 subdir('myLib')

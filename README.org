@@ -144,7 +144,7 @@ concerning this platform:
 
 * How it works?
 
-** meson.build 
+** =meson.build=
 
 #+BEGIN_SRC sh :exports results :wrap SRC meson :results drawer
 cat ./meson.build
@@ -185,7 +185,7 @@ Even if the =wolframscript= executable is *not* present, the regular =libmylib.s
  is properly compiled and installed.
 #+END_QUOTE
 
-** ./src/meson.build
+** =./src/meson.build=
    :PROPERTIES:
    :ID:       d407fd61-1f5e-41a6-ae97-c6c813189ae3
    :END:
@@ -203,7 +203,7 @@ myLib_inc = include_directories('.')
 subdir('myLib')
 #+END_SRC
 
-*** ./src/myLib/meson.build 
+*** =./src/myLib/meson.build=
 
 For this small demo we create a dynamic library =libmyLib.so= containing
 only one file =algorithm1.cpp=. You can obviously add others files by
@@ -232,7 +232,7 @@ install_headers(myLib_headers,
 
 #+END_SRC
 
-** ./mma/meson.build 
+** =./mma/meson.build=
    :PROPERTIES:
    :ID:       cb7df95d-6f7c-4dc9-8b44-b80a54c87b4d
    :END:
@@ -305,7 +305,7 @@ installed (here in the =mma_package_install_dir= default location).
 
 That's it!
 
-** =config.wls=
+** ==config.wls==
    :PROPERTIES:
    :ID:       947f6f82-c8f1-4160-b03f-7a60897c894a
    :END:

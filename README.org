@@ -99,7 +99,7 @@ endif
 #+END_SRC
 
 The =src= directory contains a [[id:d407fd61-1f5e-41a6-ae97-c6c813189ae3][regular C++ meson project]]. Then we test
-if =wolframscript= is present, if so we move to the [[id:cb7df95d-6f7c-4dc9-8b44-b80a54c87b4d][=mma= directory]]. 
+if =wolframscript= is present, if so we move to the [[id:cb7df95d-6f7c-4dc9-8b44-b80a54c87b4d][=mma= directory]]. [[mma_directory][mma directory]]
 
 #+BEGIN_QUOTE
 *Remark*: Even if you do not have MMA installed the C++ library part is
@@ -153,7 +153,7 @@ install_headers(myLib_headers,
 
 #+END_SRC
 
-** ./mma/meson.build
+** ./mma/meson.build <<mma_directory>>
    :PROPERTIES:
    :ID:       cb7df95d-6f7c-4dc9-8b44-b80a54c87b4d
    :END:

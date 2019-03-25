@@ -9,22 +9,31 @@ repo is a small illustrative example.
 
 * How to use it?
 
+** Compile and install the package 
+
 #+BEGIN_SRC sh :eval never
 git clone git@github.com:vincent-picaud/mma_meson_demo.git
 cd mma_meson_demo
-meson build 
+meson build --prefix=./install_dir
 cd build
 ninja install
 #+END_SRC
 
+** Mathematica side
+
 Then, under Mathematica (MMA):
 
+
 #+BEGIN_SRC wolfram :eval never
-<<"sparseDemoPackage`"
-?sparseDemoPackage`*
-s=SparseArray[{{1,0,0},{2 ,0,3}}]
-test[s] // TableForm
+<< myLib`
+
+?"myLib`*"
+data = {2, 1, 3, 5, 6, 6, 4, 3, 2, 4, 7, 3, 2, 4, 2, 2, 1};
+algorithm1[data, 10]
 #+END_SRC
+
+*note:* if you recompile the c++ code, you must unload the library to
+take into account the modifications: =myLib`Private`unload[]=
 
 * Help needed
 
@@ -36,22 +45,7 @@ concerning this platform.
 - [X] Mathematica  + MacOS
 - [ ] Mathematica  + Windows ? 
 
-* Main files
-
-#+BEGIN_QUOTE
-+ config.wls   <-- *MMA script to extract configuration information*
-+ meson.build  <-- *Meson build system file*
-+ README.org   <-- *this file*
-+ sandbox/     <-- *contains MMA files to check it works*
-	+ demo_sparse_manual.wls <-- *manual steps, without using Meson*
-	+ demo_sparse.wls        <-- *automatic build using Meson*
-+ src/         <-- *package sources, including C++, C and MMA codes*
-	+ demo_sparse.cpp        <-- *one LibraryLink example (from the MMA official doc*)
-	+ meson.build            <-- *Meson build system file*
-	+ sparseDemoPackage.wl   <-- *MMA package using demo_sparse.cpp*
-#+END_QUOTE
-
-* Some details 
+* How it works?
 
 ** =config.wls=
 
@@ -59,21 +53,18 @@ The =config.wls= file extracts the relevant information required by the
 Meson build process.
 
 #+BEGIN_SRC sh :exports results :wrap SRC wolfram :results drawer
-cat ./config.wls
+cat ./mma/config.wls
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC wolfram
 libraryLinkIncludeDirectories={FileNameJoin[{$InstallationDirectory,"SystemFiles","IncludeFiles","C"}],
 			       FileNameJoin[{$InstallationDirectory,"SystemFiles","Links","MathLink","DeveloperKit",$SystemID,"CompilerAdditions"}]};
-libraryInstallDirectory=FileNameJoin[{$UserBaseDirectory,"SystemFiles","LibraryResource",$SystemID}];
+libraryInstallDirectory=FileNameJoin[{$UserBaseDirectory,"SystemFiles","LibraryResources",$SystemID}];
 packageInstallDirectory=FileNameJoin[{$UserBaseDirectory,"Applications"}];
-
-(* buildDirectory=Environment["MESON_BUILD_ROOT"]; *)
 
 (* MMA < v10.1 does not have native StringRiffle *)
 stringRiffle[stringList_List,sep_String]:=TextString[stringList, ListFormat -> {"", sep, ""}];
-
 format[s_List]:=stringRiffle[s,","]
 
 (* stdout result *)
@@ -93,23 +84,21 @@ cat ./meson.build
 
 #+RESULTS:
 #+BEGIN_SRC meson
+# This is a minimal example showing how to integrate C++ and Mathematica's LibraryLink
+# Tested under MMA V11.2, Linux
+#
 project('Meson_MMA_Demo', 'cpp')
 
-mma_wolframscript = find_program('wolfram')
-
-maa_config = run_command(mma_wolframscript,'-script',files('config.wls'),
-			check: true)
-
-maa_config = maa_config.stdout().split(';')
-
-mma_include_directories = include_directories(maa_config.get(0).split(','))
-mma_library_install_dir = maa_config.get(1).strip() # caveat: strip is mandatory to get 
-mma_package_install_dir = maa_config.get(2).strip() # a correct filename
-
-message('MMA library installation directory: '+mma_library_install_dir)
-message('MMA package installation directory: '+mma_package_install_dir)
-
 subdir('src')
+
+# MMA part 
+mma_wolframscript = find_program('wolframscript')
+
+if mma_wolframscript.found()
+  subdir('mma')
+else
+  warning('Mathematica not found!')
+endif
 
 #+END_SRC
 
@@ -133,3 +122,9 @@ install_data('sparseDemoPackage.wl',
 	     install_dir: mma_package_install_dir )
 	     
 #+END_SRC
+
+* Useful references
+
+- [[https://community.wolfram.com/groups/-/m/t/189016][Doing nothing with LibraryLink]] a great tutorial, certainly the place where to begin with 
+- [[https://www.youtube.com/watch?v=Acjjj6zGem0&t=1172s][a short but instructive video about LibraryLink]]
+- [[https://reference.wolfram.com/language/LibraryLink/tutorial/Overview.html][Wolfram LibraryLink User Guide (official)]]

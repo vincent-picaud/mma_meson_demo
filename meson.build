@@ -1,26 +1,16 @@
+# This is a minimal example showing how to integrate C++ and Mathematica's LibraryLink
+# Tested under MMA V11.2, Linux
+#
 project('Meson_MMA_Demo', 'cpp')
 
-# This worked for my old mma v10.0
-#
-# mma_wolframscript = find_program('wolfram')
-#
-# maa_config = run_command(mma_wolframscript,'-script',files('config.wls'),
-# 			check: true)
-
-# This is the current and portable option
-#
-mma_wolframscript = find_program('wolframscript')
-maa_config = run_command(mma_wolframscript,'-f',files('config.wls'),
-			 check: true)
-
-maa_config = maa_config.stdout().split(';')
-
-mma_include_directories = include_directories(maa_config.get(0).split(','))
-mma_library_install_dir = maa_config.get(1).strip() # caveat: strip is mandatory to get 
-mma_package_install_dir = maa_config.get(2).strip() # a correct filename
-
-message('MMA library installation directory: '+mma_library_install_dir)
-message('MMA package installation directory: '+mma_package_install_dir)
-
 subdir('src')
+
+# MMA part 
+mma_wolframscript = find_program('wolframscript')
+
+if mma_wolframscript.found()
+  subdir('mma')
+else
+  warning('Mathematica not found!')
+endif
 

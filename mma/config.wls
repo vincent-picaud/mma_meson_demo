@@ -7,6 +7,6 @@ packageInstallDirectory=FileNameJoin[{$UserBaseDirectory,"Applications"}];
 stringRiffle[stringList_List,sep_String]:=TextString[stringList, ListFormat -> {"", sep, ""}];
 format[s_List]:=stringRiffle[s,","]
 
-(* stdout result *)
+(* stdout result in a format Meson can read *)
 Print[format[libraryLinkIncludeDirectories]<>";"<>libraryInstallDirectory<>";"<>packageInstallDirectory]
 

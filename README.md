@@ -1,25 +1,25 @@
 
 # Table of Contents
 
-1.  [What is it?](#org4b2e28e)
-2.  [How to use it?](#orgc82ddfb)
-    1.  [Compile and install the package](#orgc140398)
-    2.  [Mathematica side](#org00ce2d0)
-3.  [Portability](#orgb476bca)
-4.  [How it works?](#orgebc4e15)
-    1.  [meson.build](#org6e48f2d)
-    2.  [./src/meson.build](#org8c319d9)
-        1.  [./src/myLib/meson.build](#org9f2ac83)
-    3.  [./mma/meson.build](#org1756144)
-    4.  [`config.wls`](#org2d0a0bc)
-    5.  [Meson files](#org4ea2699)
-        1.  [`./meson.build`](#orgda27ec8)
-        2.  [`./src/meson.build`](#orgabbec89)
-5.  [Useful references](#orgf2a75aa)
+1.  [What is it?](#org8b99f6a)
+2.  [How to use it?](#orgcab87dd)
+    1.  [Compile and install the package](#orgff6910d)
+    2.  [Mathematica side](#orgd051d0c)
+3.  [Portability](#org51eeb95)
+4.  [How it works?](#orgb518086)
+    1.  [meson.build](#orgc1f69d2)
+    2.  [./src/meson.build](#orgb8970f0)
+        1.  [./src/myLib/meson.build](#org7ecc371)
+    3.  [./mma/meson.build](#org4c49445)
+    4.  [`config.wls`](#org8b76e7d)
+    5.  [Meson files](#orgcebab5e)
+        1.  [`./meson.build`](#orgbf1d92c)
+        2.  [`./src/meson.build`](#org11fa244)
+5.  [Useful references](#org3adccd2)
 
 
 
-<a id="org4b2e28e"></a>
+<a id="org8b99f6a"></a>
 
 # What is it?
 
@@ -27,13 +27,28 @@ The goal is to use the [Meson build system](https://mesonbuild.com/) to define a
 **portable** solution for Mathematica [Wolfram LibraryLink developments](https://reference.wolfram.com/language/LibraryLink/tutorial/InteractionWithMathematica.html). This GitHub
 repo is a small illustrative example.
 
+The important files are:
 
-<a id="orgc82ddfb"></a>
+-   meson.build
+-   mma/
+    -   algorithm1\_mma.cpp
+    -   config.wls
+    -   meson.build
+    -   myLib.wl
+-   src/
+    -   meson.build
+    -   myLib/
+        -   algorithm1.cpp
+        -   algorithm1.hpp
+        -   meson.build
+
+
+<a id="orgcab87dd"></a>
 
 # How to use it?
 
 
-<a id="orgc140398"></a>
+<a id="orgff6910d"></a>
 
 ## Compile and install the package
 
@@ -64,7 +79,7 @@ repo is a small illustrative example.
 > permissions to do a **system** install (triggered by `ninja install`).
 
 
-<a id="org00ce2d0"></a>
+<a id="orgd051d0c"></a>
 
 ## Mathematica side
 
@@ -83,7 +98,7 @@ Then, under Mathematica (MMA):
 > only have to call: ``myLib`Private`unload[]`` under MMA session.
 
 
-<a id="orgb476bca"></a>
+<a id="org51eeb95"></a>
 
 # Portability
 
@@ -96,12 +111,12 @@ platforms:
 -   [ ] Mathematica  + Windows ?
 
 
-<a id="orgebc4e15"></a>
+<a id="orgb518086"></a>
 
 # How it works?
 
 
-<a id="org6e48f2d"></a>
+<a id="orgc1f69d2"></a>
 
 ## meson.build
 
@@ -123,14 +138,14 @@ platforms:
       warning('Mathematica not found!')
     endif
 
-The `src` directory contains a [regular C++ meson project](#org8c319d9). Then we test
-if `wolframscript` is present, if so we move to the [`mma` directory](#org1756144). 
+The `src` directory contains a [regular C++ meson project](#orgb8970f0). Then we test
+if `wolframscript` is present, if so we move to the [`mma` directory](#org4c49445). 
 
 > **Remark**: Even if you do not have MMA installed the C++ library part is
 > properly compiled and installed.
 
 
-<a id="org8c319d9"></a>
+<a id="orgb8970f0"></a>
 
 ## ./src/meson.build
 
@@ -141,7 +156,7 @@ This is a regular C++ Meson project:
     subdir('myLib')
 
 
-<a id="org9f2ac83"></a>
+<a id="org7ecc371"></a>
 
 ### ./src/myLib/meson.build
 
@@ -164,7 +179,7 @@ files by appending them to `myLib_headers` and `myLib_sources`.
     		subdir : 'myLib')
 
 
-<a id="org1756144"></a>
+<a id="org4c49445"></a>
 
 ## ./mma/meson.build
 
@@ -204,7 +219,7 @@ files by appending them to `myLib_headers` and `myLib_sources`.
     install_data('myLib.wl', install_dir: mma_package_install_dir )
 
 
-<a id="org2d0a0bc"></a>
+<a id="org8b76e7d"></a>
 
 ## `config.wls`
 
@@ -234,14 +249,14 @@ returns
 These information are printed in a form easily readable by Meson (see )
 
 
-<a id="org4ea2699"></a>
+<a id="orgcebab5e"></a>
 
 ## Meson files
 
 I tried to only use the strict minimum to make it works.
 
 
-<a id="orgda27ec8"></a>
+<a id="orgbf1d92c"></a>
 
 ### `./meson.build`
 
@@ -264,7 +279,7 @@ I tried to only use the strict minimum to make it works.
     endif
 
 
-<a id="orgabbec89"></a>
+<a id="org11fa244"></a>
 
 ### `./src/meson.build`
 
@@ -273,7 +288,7 @@ I tried to only use the strict minimum to make it works.
     subdir('myLib')
 
 
-<a id="orgf2a75aa"></a>
+<a id="org3adccd2"></a>
 
 # Useful references
 

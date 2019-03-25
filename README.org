@@ -7,6 +7,27 @@ The goal is to use the [[https://mesonbuild.com/][Meson build system]] to define
 *portable* solution for Mathematica [[https://reference.wolfram.com/language/LibraryLink/tutorial/InteractionWithMathematica.html][Wolfram LibraryLink developments]]. This GitHub
 repo is a small illustrative example.
 
+The important files are:
+#+BEGIN_SRC sh :results output drawer :exports results
+orgTree.sh -P \* -I ".git|build|install_dir|*~|.gitignore|README*" --noLink
+#+END_SRC
+
+#+RESULTS:
+:RESULTS:
++ meson.build
++ mma/
+	+ algorithm1_mma.cpp
+	+ config.wls
+	+ meson.build
+	+ myLib.wl
++ src/
+	+ meson.build
+	+ myLib/
+		+ algorithm1.cpp
+		+ algorithm1.hpp
+		+ meson.build
+:END:
+
 * How to use it?
 
 ** Compile and install the package 

@@ -4,16 +4,16 @@
 * What is it?
 
 The goal is to use the [[https://mesonbuild.com/][Meson build system]] to define an *easy to use* and
-*portable* solution for Mathematica [[https://reference.wolfram.com/language/LibraryLink/tutorial/InteractionWithMathematica.html][Wolfram LibraryLink developments]]. This GitHub
-repo is a small illustrative example.
+*portable* solution for Mathematica (MMA) [[https://reference.wolfram.com/language/LibraryLink/tutorial/InteractionWithMathematica.html][Wolfram LibraryLink
+developments]]. This GitHub repository is a small illustrative example.
 
 The important files are:
-#+BEGIN_SRC sh :results output drawer :exports results
+#+BEGIN_SRC sh :results output drawer :exports results :wrap EXAMPLE
 orgTree.sh -P \* -I ".git|build|install_dir|*~|.gitignore|README*" --noLink
 #+END_SRC
 
 #+RESULTS:
-:RESULTS:
+#+BEGIN_EXAMPLE
 + meson.build
 + mma/
 	+ algorithm1_mma.cpp
@@ -26,44 +26,83 @@ orgTree.sh -P \* -I ".git|build|install_dir|*~|.gitignore|README*" --noLink
 		+ algorithm1.cpp
 		+ algorithm1.hpp
 		+ meson.build
-:END:
+#+END_EXAMPLE
 
 * How to use it?
 
 ** Compile and install the package 
+   :PROPERTIES:
+   :ID:       e70d2390-d048-40db-80d5-4df0f9b149b6
+   :END:
 
 #+BEGIN_SRC sh :eval never
 git clone git@github.com:vincent-picaud/mma_meson_demo.git
 cd mma_meson_demo
-meson build --prefix=./install_dir
+meson build --prefix=$(pwd)/install_dir
 cd build
 ninja install
 #+END_SRC
 
+you will get somthing like:
+#+BEGIN_EXAMPLE
+picaud@hostname:~/GitHub/mma_meson_demo$ meson build --prefix=$(pwd)/install_dir
+The Meson build system
+Version: 0.49.2
+Source dir: /home/picaud/GitHub/mma_meson_demo
+Build dir: /home/picaud/GitHub/mma_meson_demo/build
+Build type: native build
+Project name: Meson_MMA_Demo
+Project version: undefined
+Native C++ compiler: ccache c++ (gcc 8.3.0 "c++ (Debian 8.3.0-2) 8.3.0")
+Build machine cpu family: x86_64
+Build machine cpu: x86_64
+Program wolframscript found: YES (/usr/bin/wolframscript)
+Message: MMA library installation directory: /home/picaud/.Mathematica/SystemFiles/LibraryResources/Linux-x86-64
+Message: MMA package installation directory: /home/picaud/.Mathematica/Applications
+Build targets in project: 2
+Found ninja-1.8.2 at /usr/bin/ninja
+picaud@hostname:~/GitHub/mma_meson_demo$ cd build/
+picaud@hostname:~/GitHub/mma_meson_demo/build$ ninja install
+[5/6] Installing files.
+Installing src/myLib/libmyLib.so to /home/picaud/GitHub/mma_meson_demo/install_dir/lib/x86_64-linux-gnu
+Installing mma/libmyLibMMA.so to /home/picaud/.Mathematica/SystemFiles/LibraryResources/Linux-x86-64
+Installing /home/picaud/GitHub/mma_meson_demo/src/myLib/algorithm1.hpp to /home/picaud/GitHub/mma_meson_demo/install_dir/include/myLib
+Installing /home/picaud/GitHub/mma_meson_demo/mma/myLib.wl to /home/picaud/.Mathematica/Applications
+#+END_EXAMPLE
+
 #+BEGIN_QUOTE
-*Remark*: [required --prefix=./install_dir]
+*Remark*: [role of --prefix]
 
 This demo will generate two dynamic libraries:
 - =libmyLib.so= a regular C++ library (totally independent of MMA)
 - =libmylibMMA.so= a dynamic library that uses MMA's LibraryLink to wrap functions contained in =libmyLib.so=.
 
+The =libmyLib.so= install directory is defined by the =--prefix= flag, with =--prefix=$(pwd)/install_dir= this is
+#+BEGIN_EXAMPLE
+/home/picaud/GitHub/mma_meson_demo/install_dir/lib/x86_64-linux-gnu
+#+END_EXAMPLE
+in my case.
+
 By default =libmylibMMA.so= is installed in the user directory
-(=$HOME/.Mathematica/SystemFiles/LibraryResources/Linux-x86-64= in my
-case). You can change that if you want (for the moment by modifying
-the meson.build file). However the important point to understand is
-that =libmylibMMA.so= needs to know where the =libmyLib.so= library is. We
-provide this information by embedding this location into
-=libmylibMMA.so= using its [[https://amir.rachum.com/blog/2016/09/17/shared-libraries/][=rpath= section]]. This section is filled
-(without pain using [[https://mesonbuild.com/Reference-manual.html#executable][Meson install_rpath option]]!) at *installation*
-time. That is the reason why we define the =--prefix= variable to
-*locally* install =libmyLib.so=. If this =--prefix= variable is not defined
-everything works equally well except that you will need extra
-permissions to do a *system* install (triggered by =ninja install=).
+#+BEGIN_EXAMPLE
+$HOME/.Mathematica/SystemFiles/LibraryResources/Linux-x86-64
+#+END_EXAMPLE
+in my case.
+
+The important point to understand is that =libmylibMMA.so= needs to know
+where the =libmyLib.so= library is installed. We provide this
+information by embedding it into the =libmylibMMA.so= [[https://amir.rachum.com/blog/2016/09/17/shared-libraries/][=rpath=
+section]]. This section is [[https://mesonbuild.com/Reference-manual.html#executable][filled by Meson]] at *installation* time. By
+consequence to make it works we must define this installation path.
+
+If the =--prefix= variable is not defined everything works equally well
+except that you will need extra permissions to do a default *system*
+install (invoked when you type =ninja install=).
 #+END_QUOTE
 
 ** Mathematica side
 
-Then, under Mathematica (MMA):
+To test it works, type the following under Mathematica:
 
 #+BEGIN_SRC wolfram :eval never
 << myLib`
@@ -76,195 +115,26 @@ algorithm1[data, 10]
 #+BEGIN_QUOTE
 *Remark*: [ =myLib`Private`unload[]= ]
 
-During development, if you recompile the c++ code, you must unload the
-library to make MMA taking account the modification. To do that you
-only have to call: =myLib`Private`unload[]= under MMA session.
+If you recompile the =libmylib.so= or =libmylibMMA.so= C++ library you
+must call =myLib`Private`unload[]= to make MMA aware of this
+modification (no need to kill the Kernel!).
+
+Obviously, for regular uses of the MMA =myLib= package, you do not need
+this function.
 #+END_QUOTE
 
 * Portability
 
 I have no access to Windows. It would we nice to have some feedback
-concerning this platform. So far, tested with MMA V11.2 under these
-platforms:
+concerning this platform:
 
 - [X] Mathematica  + Linux
 - [X] Mathematica  + MacOS
-- [ ] Mathematica  + Windows ? 
+- [ ] Mathematica  + Windows ??? 
 
 * How it works?
 
 ** meson.build 
-
-#+BEGIN_SRC sh :exports results :wrap SRC meson :results drawer
-cat ./meson.build
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_SRC wolfram
-# This is a minimal example showing how to integrate C++ and Mathematica's LibraryLink
-# Tested under MMA V11.2, Linux
-#
-project('Meson_MMA_Demo', 'cpp')
-
-subdir('src')
-
-# MMA part 
-mma_wolframscript = find_program('wolframscript')
-
-if mma_wolframscript.found()
-  subdir('mma')
-else
-  warning('Mathematica not found!')
-endif
-
-#+END_SRC
-
-The =src= directory contains a [[id:d407fd61-1f5e-41a6-ae97-c6c813189ae3][regular C++ meson project]]. Then we test
-if =wolframscript= is present, if so we move to the [[id:cb7df95d-6f7c-4dc9-8b44-b80a54c87b4d][=mma= directory]]. 
-
-#+BEGIN_QUOTE
-*Remark*: Even if you do not have MMA installed the C++ library part is
-properly compiled and installed.
-#+END_QUOTE
-
-** ./src/meson.build
-   :PROPERTIES:
-   :ID:       d407fd61-1f5e-41a6-ae97-c6c813189ae3
-   :END:
-
-This is a regular C++ Meson project:
-
-#+BEGIN_SRC sh :exports results :wrap SRC meson :results drawer
-cat ./src/meson.build
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_SRC meson
-inc = include_directories('.')
-
-subdir('myLib')
-#+END_SRC
-
-*** ./src/myLib/meson.build 
-
-For this small demo we create a dynamic library =libmyLib.so=
-containing only one file =algorithm1.cpp=. You can obviously add others
-files by appending them to =myLib_headers= and =myLib_sources=.
-
-
-#+BEGIN_SRC sh :exports results :wrap SRC meson :results drawer
-cat ./src/myLib/meson.build
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_SRC meson
-myLib_headers = ['algorithm1.hpp']
-myLib_sources = ['algorithm1.cpp']
-
-myLib_lib = library('myLib',
-		   include_directories : inc,
-		   install : true,
-		   sources: [myLib_headers,myLib_sources])
-
-myLib_dep = declare_dependency(include_directories : inc,
-			      link_with : myLib_lib)
-
-install_headers(myLib_headers,
-		subdir : 'myLib')
-
-#+END_SRC
-
-** ./mma/meson.build 
-   :PROPERTIES:
-   :ID:       cb7df95d-6f7c-4dc9-8b44-b80a54c87b4d
-   :END:
-
-
-#+BEGIN_SRC sh :exports results :wrap SRC meson :results drawer
-cat ./mma/meson.build
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_SRC meson
-maa_config = run_command(mma_wolframscript,'-f',files('config.wls'), check: true)
-
-maa_config = maa_config.stdout().split(';')
-
-mma_include_directories = include_directories(maa_config.get(0).split(','))
-mma_library_install_dir = maa_config.get(1).strip() # caveat: strip is mandatory to get 
-mma_package_install_dir = maa_config.get(2).strip() # a correct filename
-
-message('MMA library installation directory: '+mma_library_install_dir)
-message('MMA package installation directory: '+mma_package_install_dir)
-
-#----------------
-# C++ sources
-#----------------
-
-myLibMMA_sources = ['algorithm1_mma.cpp']
-
-shared_library('myLibMMA',
-	       sources: [myLibMMA_sources],
-	       dependencies: [myLib_dep],
-	       include_directories: mma_include_directories,
-	       install: true,
-	       # libmyLibMMA.so needs to find libmyLib.so, this can be done using rpath
-	       install_rpath: join_paths(get_option('prefix'),get_option('libdir')),
-	       install_dir: mma_library_install_dir)
-
-#----------------
-# MMA package
-#----------------
-
-install_data('myLib.wl', install_dir: mma_package_install_dir )
-#+END_SRC
-
-
-
-** =config.wls=
-
-The =config.wls= script extracts the relevant information required by the
-Meson build process.
-
-#+BEGIN_SRC sh :exports results :wrap SRC wolfram :results drawer
-cat ./mma/config.wls
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_SRC wolfram
-libraryLinkIncludeDirectories={FileNameJoin[{$InstallationDirectory,"SystemFiles","IncludeFiles","C"}],
-			       FileNameJoin[{$InstallationDirectory,"SystemFiles","Links","MathLink","DeveloperKit",$SystemID,"CompilerAdditions"}]};
-libraryInstallDirectory=FileNameJoin[{$UserBaseDirectory,"SystemFiles","LibraryResources",$SystemID}];
-packageInstallDirectory=FileNameJoin[{$UserBaseDirectory,"Applications"}];
-
-(* MMA < v10.1 does not have native StringRiffle *)
-stringRiffle[stringList_List,sep_String]:=TextString[stringList, ListFormat -> {"", sep, ""}];
-format[s_List]:=stringRiffle[s,","]
-
-(* stdout result *)
-Print[format[libraryLinkIncludeDirectories]<>";"<>libraryInstallDirectory<>";"<>packageInstallDirectory]
-
-#+END_SRC
-
-With my configuration
-
-#+BEGIN_SRC sh :eval never 
-wolframscript -f config.wls
-#+END_SRC
-
-returns 
-
-#+BEGIN_EXAMPLE
-/usr/local/Wolfram/Mathematica/11.2/SystemFiles/IncludeFiles/C,/usr/local/Wolfram/Mathematica/11.2/SystemFiles/Links/MathLink/DeveloperKit/Linux-x86-64/CompilerAdditions;/home/picaud/.Mathematica/SystemFiles/LibraryResources/Linux-x86-64;/home/picaud/.Mathematica/Applications
-#+END_EXAMPLE
-
-These information are printed in a form easily readable by Meson (see )
-
-** Meson files 
-
-I tried to only use the strict minimum to make it works.
-
-*** =./meson.build=
 
 #+BEGIN_SRC sh :exports results :wrap SRC meson :results drawer
 cat ./meson.build
@@ -292,7 +162,25 @@ endif
 
 #+END_SRC
 
-*** =./src/meson.build=
+The =src= directory contains a [[id:d407fd61-1f5e-41a6-ae97-c6c813189ae3][regular C++ meson project]]. 
+
+After having compiled it we test if the =wolframscript= executable is present, if so
+we move to the [[id:cb7df95d-6f7c-4dc9-8b44-b80a54c87b4d][=mma= directory]]. 
+
+
+#+BEGIN_QUOTE
+*Remark*: 
+
+Even if the =wolframscript= executable is *not* present, the regular =libmylib.so= C++ library 
+ is properly compiled and installed.
+#+END_QUOTE
+
+** ./src/meson.build
+   :PROPERTIES:
+   :ID:       d407fd61-1f5e-41a6-ae97-c6c813189ae3
+   :END:
+
+Ax explained, this is a regular C++ Meson project:
 
 #+BEGIN_SRC sh :exports results :wrap SRC meson :results drawer
 cat ./src/meson.build
@@ -300,17 +188,139 @@ cat ./src/meson.build
 
 #+RESULTS:
 #+BEGIN_SRC meson
-demo_sparse_sources = ['demo_sparse.cpp']
+myLib_inc = include_directories('.')
 
-shared_library('demo_sparse',
-	       sources: [demo_sparse_sources],
+subdir('myLib')
+#+END_SRC
+
+*** ./src/myLib/meson.build 
+
+For this small demo we create a dynamic library =libmyLib.so= containing
+only one file =algorithm1.cpp=. You can obviously add others files by
+appending them to the =myLib_headers= and =myLib_sources= Meson variables.
+
+
+#+BEGIN_SRC sh :exports results :wrap SRC meson :results drawer
+cat ./src/myLib/meson.build
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC meson
+myLib_headers = ['algorithm1.hpp']
+myLib_sources = ['algorithm1.cpp']
+
+myLib_lib = library('myLib',
+		   include_directories : myLib_inc,
+		   install : true,
+		   sources: [myLib_headers,myLib_sources])
+
+myLib_dep = declare_dependency(include_directories : myLib_inc,
+			      link_with : myLib_lib)
+
+install_headers(myLib_headers,
+		subdir : 'myLib')
+
+#+END_SRC
+
+** ./mma/meson.build 
+   :PROPERTIES:
+   :ID:       cb7df95d-6f7c-4dc9-8b44-b80a54c87b4d
+   :END:
+
+
+This part is specific to MMA.
+
+#+BEGIN_SRC sh :exports results :wrap SRC meson :results drawer
+cat ./mma/meson.build
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC meson
+#----------------
+# Extract MMA information 
+#----------------
+maa_config = run_command(mma_wolframscript,'-f',files('config.wls'), check: true)
+
+maa_config = maa_config.stdout().split(';')
+
+mma_include_directories = include_directories(maa_config.get(0).split(','))
+mma_library_install_dir = maa_config.get(1).strip() # caveat: strip is mandatory to get 
+mma_package_install_dir = maa_config.get(2).strip() # a correct filename
+
+message('MMA library installation directory: '+mma_library_install_dir)
+message('MMA package installation directory: '+mma_package_install_dir)
+
+#----------------
+# myLibMMA library 
+#----------------
+
+myLibMMA_sources = ['algorithm1_mma.cpp']
+
+shared_library('myLibMMA',
+	       sources: [myLibMMA_sources],
+	       dependencies: [myLib_dep],
 	       include_directories: mma_include_directories,
 	       install: true,
+	       # libmyLibMMA.so needs to find libmyLib.so, this can be done using rpath
+	       install_rpath: join_paths(get_option('prefix'),get_option('libdir')),
 	       install_dir: mma_library_install_dir)
 
-install_data('sparseDemoPackage.wl',
-	     install_dir: mma_package_install_dir )
-	     
+#----------------
+# MMA package
+#----------------
+
+install_data('myLib.wl', install_dir: mma_package_install_dir )
+#+END_SRC
+
+In a *first step* we run the [[id:947f6f82-c8f1-4160-b03f-7a60897c894a][=config.wls=]] script to extract from MMA the
+relevant information required by the Meson build process. These
+information are printed in a form easily readable by Meson:
+
+#+BEGIN_SRC sh :eval never 
+wolframscript -f config.wls
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+/usr/local/Wolfram/Mathematica/11.2/SystemFiles/IncludeFiles/C,/usr/local/Wolfram/Mathematica/11.2/SystemFiles/Links/MathLink/DeveloperKit/Linux-x86-64/CompilerAdditions;/home/picaud/.Mathematica/SystemFiles/LibraryResources/Linux-x86-64;/home/picaud/.Mathematica/Applications
+#+END_EXAMPLE
+
+These extracted information are stored into the =mma_include_directories=, =mma_library_install_dir= and =mma_package_install_dir= Meson variables.
+
+In a *second step* we create the =libmylibMMA.so= dynamic library and also
+define its =rpath variable= to allow it to find the installed
+=libmyLib.so= library (see [[id:e70d2390-d048-40db-80d5-4df0f9b149b6][Compile and install the package]]).
+
+In a *third step* we define where the MMA package =myLib.wl= will be
+installed (here in the =mma_package_install_dir= default location).
+
+That's it!
+
+** =config.wls=
+   :PROPERTIES:
+   :ID:       947f6f82-c8f1-4160-b03f-7a60897c894a
+   :END:
+
+The =config.wls= script extracts the relevant information required by the
+Meson build process. 
+
+#+BEGIN_SRC sh :exports results :wrap SRC wolfram :results drawer
+cat ./mma/config.wls
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC wolfram
+libraryLinkIncludeDirectories={FileNameJoin[{$InstallationDirectory,"SystemFiles","IncludeFiles","C"}],
+			       FileNameJoin[{$InstallationDirectory,"SystemFiles","Links","MathLink","DeveloperKit",$SystemID,"CompilerAdditions"}]};
+libraryInstallDirectory=FileNameJoin[{$UserBaseDirectory,"SystemFiles","LibraryResources",$SystemID}];
+packageInstallDirectory=FileNameJoin[{$UserBaseDirectory,"Applications"}];
+
+(* MMA < v10.1 does not have native StringRiffle *)
+stringRiffle[stringList_List,sep_String]:=TextString[stringList, ListFormat -> {"", sep, ""}];
+format[s_List]:=stringRiffle[s,","]
+
+(* stdout result *)
+Print[format[libraryLinkIncludeDirectories]<>";"<>libraryInstallDirectory<>";"<>packageInstallDirectory]
+
 #+END_SRC
 
 * Useful references

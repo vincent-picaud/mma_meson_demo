@@ -4,5 +4,6 @@
 
 namespace myLib
 {
-  void algorithm1(const double* source, double* dest, const size_t n, const size_t halfWidth);
+  // For demo purpose: dest <- alpha.source
+  void algorithm1(const double alpha,const double* source, double* dest, const size_t n);
 }

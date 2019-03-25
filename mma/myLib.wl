@@ -7,13 +7,13 @@ ClearAll @@ Names["myLib`*"];
 ,* User's functions
 ,*)
 algorithm1::usage=
-"algorithm1[signal_VectorQ,halfwidth_] return baseline found by algorithm1 method";
+"algorithm1[\[Alpha]_Real,vector_?VectorQ] returns \[Alpha].vector";
 
 
 Begin["`Private`"]; 
 
 (*
-,* Library name. Not yet tested under windows, works under OS Mac & Linux
+,* Library name. Not yet tested under windows, works under MacOS & Linux
 ,*)
 myLibMMAfilename=If[$OperatingSystem=="Windows","myLibMMA","libmyLibMMA"];
 
@@ -26,8 +26,8 @@ unload[]:=LibraryUnload[myLibMMAfilename]
 (*
 ,* Use memoization to allow a faster package initialization and just in time library load
 ,*)
-wrapAlgorithm1 := wrapAlgorithm1 = LibraryFunctionLoad[myLibMMAfilename,"algorithm1",{{Real,1,"Constant"},Integer},{Real,1}];
-algorithm1[signal_?VectorQ,halfwidth_Integer]:=Return[wrapAlgorithm1[signal,halfwidth]];
+wrapAlgorithm1 := wrapAlgorithm1 = LibraryFunctionLoad[myLibMMAfilename,"algorithm1",{Real,{Real,1,"Constant"}},{Real,1}];
+algorithm1[\[Alpha]_Real,vector_?VectorQ]:=Return[wrapAlgorithm1[\[Alpha],vector]];
 
 End[]; (* Private *)
 

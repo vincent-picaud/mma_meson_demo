@@ -1,3 +1,5 @@
+# CAVEAT: README.md is automatically generated from this file!
+
 #+OPTIONS: H:3 toc:t num:t \n:nil ::t |:t ^:{} -:t f:t *:t tex:t d:t tags:not-in-toc
 #+TITLE: Wolfram LibraryLink + Meson
   
@@ -325,6 +327,7 @@ Print[format[libraryLinkIncludeDirectories]<>";"<>libraryInstallDirectory<>";"<>
 
 * Useful references
 
-- [[https://community.wolfram.com/groups/-/m/t/189016][Doing nothing with LibraryLink]] a great tutorial, certainly the place where to begin with 
+- [[https://community.wolfram.com/groups/-/m/t/189016][Doing nothing with LibraryLink]] certainly the place to begin with if
+  you do not know LibraryLink yet.
 - [[https://www.youtube.com/watch?v=Acjjj6zGem0&t=1172s][a short but instructive video about LibraryLink]]
 - [[https://reference.wolfram.com/language/LibraryLink/tutorial/Overview.html][Wolfram LibraryLink User Guide (official)]]

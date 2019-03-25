@@ -6,10 +6,6 @@
 
 #include "myLib/algorithm1.hpp"
 
-extern "C" DLLEXPORT mint WolframLibrary_getVersion() { return WolframLibraryVersion; }
-extern "C" DLLEXPORT int WolframLibrary_initialize(WolframLibraryData libData) { return LIBRARY_NO_ERROR; }
-extern "C" DLLEXPORT void WolframLibrary_uninitialize(WolframLibraryData libData) { return; }
-
 //----------------
 
 extern "C" DLLEXPORT int algorithm1(WolframLibraryData libData, mint Argc, MArgument* Args, MArgument Res)

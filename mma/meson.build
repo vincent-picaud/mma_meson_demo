@@ -16,7 +16,8 @@ message('MMA package installation directory: '+mma_package_install_dir)
 # myLibMMA library 
 #----------------
 
-myLibMMA_sources = ['algorithm1_mma.cpp']
+myLibMMA_sources = ['myLib_mma.cpp',
+		    'algorithm1_mma.cpp']
 
 shared_library('myLibMMA',
 	       sources: [myLibMMA_sources],

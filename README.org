@@ -305,7 +305,7 @@ installed (here in the =mma_package_install_dir= default location).
 
 That's it!
 
-** ==config.wls==
+** =config.wls=
    :PROPERTIES:
    :ID:       947f6f82-c8f1-4160-b03f-7a60897c894a
    :END:
@@ -452,3 +452,6 @@ extern "C" DLLEXPORT int algorithm1(WolframLibraryData libData, mint Argc, MArgu
 - [[https://www.youtube.com/watch?v=Acjjj6zGem0&t=1172s][a short but instructive video about LibraryLink]] some tips
 - [[https://reference.wolfram.com/language/LibraryLink/tutorial/Overview.html][Wolfram LibraryLink User Guide (official)]]
 - https://github.com/arnoudbuzing/wolfram-librarylink-examples
+
+*Note:* I also have written a bash-script to generate pure C++ project
+templates (configured with gtest and doxygen): [[https://github.com/vincent-picaud/meson_starter_script][meson_starter_script]].

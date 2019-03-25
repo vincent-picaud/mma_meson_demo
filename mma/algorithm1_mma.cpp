@@ -15,6 +15,7 @@ extern "C" DLLEXPORT int algorithm1(WolframLibraryData libData, mint Argc, MArgu
   const double alpha = MArgument_getReal(Args[0]);
   // source vector
   const MTensor src_tensor = MArgument_getMTensor(Args[1]);
+  assert(libData->MTensor_getType(src_tensor)==MType_Real);
   const mint src_rank = libData->MTensor_getRank(src_tensor);
   assert(src_rank == 1);
   const mint* const src_dims = libData->MTensor_getDimensions(src_tensor);
@@ -29,15 +30,6 @@ extern "C" DLLEXPORT int algorithm1(WolframLibraryData libData, mint Argc, MArgu
   // call our libmyLib.so function 
   myLib::algorithm1(alpha,src_data,dest_data,src_dims[0]);
   
-  // size_t size = src_dims[0];
-  // for (size_t i = 0; i < size; i++)
-  // {
-  //   std::cerr << "\n -----------" << src_data[i];
-  //   dest_data[i] = -3 * src_data[i];
-  // }
-
-  // std::cerr << "\n ----------- qsdfqsdf";
-
   MArgument_setMTensor(Res, dest_tensor);
   return LIBRARY_NO_ERROR;
 }

@@ -110,9 +110,17 @@ To test it works, type the following under Mathematica:
 << myLib`
 
 ?"myLib`*"
-data = {2, 1, 3, 5, 6, 6, 4, 3, 2, 4, 7, 3, 2, 4, 2, 2, 1};
-algorithm1[data, 10]
+data = {2, 1, 3, 5, 6, 6, 4, 3 };
+algorithm1[100.,data]
 #+END_SRC
+
+it should print:
+
+#+BEGIN_EXAMPLE
+algorithm1[α_Real,vector_?VectorQ] returns α.vector
+
+{200., 100., 300., 500., 600., 600., 400., 300.}
+#+END_EXAMPLE
 
 #+BEGIN_QUOTE
 *Remark*: [ =myLib`Private`unload[]= ]
@@ -325,9 +333,122 @@ Print[format[libraryLinkIncludeDirectories]<>";"<>libraryInstallDirectory<>";"<>
 
 #+END_SRC
 
+** Our cpp files
+
+This is really for demo purpose as we simply compute a scalar-vector product w=α.v
+
+*** The =libmyLib.so= cpp files (our c++ library)
+
+The =./src/myLib/algorithm1.hpp= file:
+
+#+BEGIN_SRC sh :exports results :wrap SRC cpp :results drawer
+cat ./src/myLib/algorithm1.hpp
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC cpp
+#pragma once
+
+#include <cstddef>
+
+namespace myLib
+{
+  // For demo purpose: dest <- alpha.source
+  void algorithm1(const double alpha,const double* source, double* dest, const size_t n);
+}
+#+END_SRC
+
+The =./src/myLib/algorithm1.cpp= file:
+
+#+BEGIN_SRC sh :exports results :wrap SRC cpp :results drawer
+cat ./src/myLib/algorithm1.cpp
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC cpp
+#include "myLib/algorithm1.hpp"
+
+namespace myLib
+{
+  void algorithm1(const double alpha, const double* source, double* dest, const size_t n)
+  {
+    for (size_t i = 0; i < n; i++)
+    {
+      dest[i] = alpha*source[i];
+    }
+  }
+
+}  // namespace myLib
+#+END_SRC
+
+*** The =libmyLibMMA.so= cpp files (our MMA wrapper)
+
+The =./mma/myLib_mma.cpp= file:
+
+#+BEGIN_SRC sh :exports results :wrap SRC cpp :results drawer
+cat ./mma/myLib_mma.cpp
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC cpp
+#include "WolframLibrary.h"
+#include "WolframSparseLibrary.h"
+
+extern "C" DLLEXPORT mint WolframLibrary_getVersion() { return WolframLibraryVersion; }
+extern "C" DLLEXPORT int WolframLibrary_initialize(WolframLibraryData libData) { return LIBRARY_NO_ERROR; }
+extern "C" DLLEXPORT void WolframLibrary_uninitialize(WolframLibraryData libData) { return; }
+#+END_SRC
+
+The =./mma/algorithm1_mma.cpp= file:
+
+#+BEGIN_SRC sh :exports results :wrap SRC cpp :results drawer
+cat ./mma/algorithm1_mma.cpp
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC cpp
+#include <cassert>
+#include <iostream>
+
+#include "WolframLibrary.h"
+#include "WolframSparseLibrary.h"
+
+#include "myLib/algorithm1.hpp"
+
+//----------------
+
+// TODO replace asserts by MMA error message
+extern "C" DLLEXPORT int algorithm1(WolframLibraryData libData, mint Argc, MArgument* Args, MArgument Res)
+{
+  // alpha
+  const double alpha = MArgument_getReal(Args[0]);
+  // source vector
+  const MTensor src_tensor = MArgument_getMTensor(Args[1]);
+  assert(libData->MTensor_getType(src_tensor)==MType_Real);
+  const mint src_rank = libData->MTensor_getRank(src_tensor);
+  assert(src_rank == 1);
+  const mint* const src_dims = libData->MTensor_getDimensions(src_tensor);
+  const double* const src_data = libData->MTensor_getRealData(src_tensor);
+  // dest vector
+  MTensor dest_tensor;
+  const mint dest_rank = src_rank;
+  const mint dest_dims[] = { src_dims[0] };
+  libData->MTensor_new(MType_Real, dest_rank, dest_dims, &dest_tensor);
+  double* const dest_data = libData->MTensor_getRealData(dest_tensor);
+
+  // call our libmyLib.so function 
+  myLib::algorithm1(alpha,src_data,dest_data,src_dims[0]);
+  
+  MArgument_setMTensor(Res, dest_tensor);
+  return LIBRARY_NO_ERROR;
+}
+
+#+END_SRC
+
 * Useful references
 
 - [[https://community.wolfram.com/groups/-/m/t/189016][Doing nothing with LibraryLink]] certainly the place to begin with if
   you do not know LibraryLink yet.
-- [[https://www.youtube.com/watch?v=Acjjj6zGem0&t=1172s][a short but instructive video about LibraryLink]]
+- [[https://www.youtube.com/watch?v=Acjjj6zGem0&t=1172s][a short but instructive video about LibraryLink]] some tips
 - [[https://reference.wolfram.com/language/LibraryLink/tutorial/Overview.html][Wolfram LibraryLink User Guide (official)]]
+- https://github.com/arnoudbuzing/wolfram-librarylink-examples

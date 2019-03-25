@@ -45,7 +45,7 @@ cd build
 ninja install
 #+END_SRC
 
-you will get somthing like:
+you will get something like:
 #+BEGIN_EXAMPLE
 picaud@hostname:~/GitHub/mma_meson_demo$ meson build --prefix=$(pwd)/install_dir
 The Meson build system

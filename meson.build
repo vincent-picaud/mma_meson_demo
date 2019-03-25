@@ -1,11 +1,13 @@
-# This is a minimal example showing how to integrate C++ and Mathematica's LibraryLink
-# Tested under MMA V11.2, Linux
-#
+#----------------
+# Regular Meson C++ project
+#----------------
 project('Meson_MMA_Demo', 'cpp')
 
 subdir('src')
 
-# MMA part 
+#----------------
+# MMA specific
+#----------------
 mma_wolframscript = find_program('wolframscript')
 
 if mma_wolframscript.found()

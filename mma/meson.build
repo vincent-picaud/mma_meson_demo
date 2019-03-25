@@ -1,3 +1,6 @@
+#----------------
+# Extract MMA information 
+#----------------
 maa_config = run_command(mma_wolframscript,'-f',files('config.wls'), check: true)
 
 maa_config = maa_config.stdout().split(';')
@@ -10,7 +13,7 @@ message('MMA library installation directory: '+mma_library_install_dir)
 message('MMA package installation directory: '+mma_package_install_dir)
 
 #----------------
-# C++ sources
+# myLibMMA library 
 #----------------
 
 myLibMMA_sources = ['algorithm1_mma.cpp']

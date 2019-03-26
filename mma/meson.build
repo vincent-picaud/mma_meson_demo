@@ -1,8 +1,23 @@
 #----------------
 # Extract MMA information 
 #----------------
-maa_config = run_command(mma_wolframscript,'-f',files('config.wls'), check: true)
 
+# try MMA v10 first
+mma_wolframscript = find_program('MathematicaScript')
+if mma_wolframscript.found()
+  maa_config = run_command(mma_wolframscript,'-script',files('config.wls'), check: true)
+else
+  # then MMA v11
+  mma_wolframscript = find_program('wolframscript')
+  if mma_wolframscript.found()
+    maa_config = run_command(mma_wolframscript,'-f',files('config.wls'), check: true)
+  else
+    # no MMA? 
+    warning('Mathematica not found!')
+    subdir_done()
+  endif
+endif
+    
 maa_config = maa_config.stdout().split(';')
 
 mma_include_directories = include_directories(maa_config.get(0).split(','))

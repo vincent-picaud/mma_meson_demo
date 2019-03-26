@@ -30,6 +30,9 @@ orgTree.sh -P \* -I ".git|build|install_dir|*~|.gitignore|README*" --noLink
 		+ meson.build
 #+END_EXAMPLE
 
+* News
+- [2019-03-26 Tue] added support for MMA v10 (before only v11 was supported)
+
 * How to use it?
 
 ** Compile and install the package 
@@ -162,27 +165,24 @@ subdir('src')
 #----------------
 # MMA specific
 #----------------
-mma_wolframscript = find_program('wolframscript')
 
-if mma_wolframscript.found()
-  subdir('mma')
-else
-  warning('Mathematica not found!')
-endif
+subdir('mma')
+
 
 #+END_SRC
 
-The =src= directory contains a [[id:d407fd61-1f5e-41a6-ae97-c6c813189ae3][regular C++ meson project]]. 
+The =src= directory contains a [[id:d407fd61-1f5e-41a6-ae97-c6c813189ae3][regular C++ meson project]], which is
+compiled in a regular way.
 
-After having compiled it we test if the =wolframscript= executable is present, if so
-we move to the [[id:cb7df95d-6f7c-4dc9-8b44-b80a54c87b4d][=mma= directory]]. 
+After that we move to the [[id:cb7df95d-6f7c-4dc9-8b44-b80a54c87b4d][mma directory]] which is dedicated to the
+Mathematica part.
 
 
 #+BEGIN_QUOTE
 *Remark*: 
 
-Even if the =wolframscript= executable is *not* present, the regular =libmylib.so= C++ library 
- is properly compiled and installed.
+Even if you do not have Mathematica installed, the C++ library (in the
+ =./src/= directory) is properly compiled and installed.
 #+END_QUOTE
 
 ** =./src/meson.build=
@@ -190,7 +190,7 @@ Even if the =wolframscript= executable is *not* present, the regular =libmylib.s
    :ID:       d407fd61-1f5e-41a6-ae97-c6c813189ae3
    :END:
 
-Ax explained, this is a regular C++ Meson project:
+As explained, this is a regular C++ Meson project:
 
 #+BEGIN_SRC sh :exports results :wrap SRC meson :results drawer
 cat ./src/meson.build
@@ -249,8 +249,23 @@ cat ./mma/meson.build
 #----------------
 # Extract MMA information 
 #----------------
-maa_config = run_command(mma_wolframscript,'-f',files('config.wls'), check: true)
 
+# try MMA v10 first
+mma_wolframscript = find_program('MathematicaScript')
+if mma_wolframscript.found()
+  maa_config = run_command(mma_wolframscript,'-script',files('config.wls'), check: true)
+else
+  # then MMA v11
+  mma_wolframscript = find_program('wolframscript')
+  if mma_wolframscript.found()
+    maa_config = run_command(mma_wolframscript,'-f',files('config.wls'), check: true)
+  else
+    # no MMA? 
+    warning('Mathematica not found!')
+    subdir_done()
+  endif
+endif
+    
 maa_config = maa_config.stdout().split(';')
 
 mma_include_directories = include_directories(maa_config.get(0).split(','))
@@ -264,7 +279,8 @@ message('MMA package installation directory: '+mma_package_install_dir)
 # myLibMMA library 
 #----------------
 
-myLibMMA_sources = ['algorithm1_mma.cpp']
+myLibMMA_sources = ['myLib_mma.cpp',
+		    'algorithm1_mma.cpp']
 
 shared_library('myLibMMA',
 	       sources: [myLibMMA_sources],
@@ -328,7 +344,7 @@ packageInstallDirectory=FileNameJoin[{$UserBaseDirectory,"Applications"}];
 stringRiffle[stringList_List,sep_String]:=TextString[stringList, ListFormat -> {"", sep, ""}];
 format[s_List]:=stringRiffle[s,","]
 
-(* stdout result *)
+(* stdout result in a format Meson can read *)
 Print[format[libraryLinkIncludeDirectories]<>";"<>libraryInstallDirectory<>";"<>packageInstallDirectory]
 
 #+END_SRC

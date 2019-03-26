@@ -1,25 +1,26 @@
 
 # Table of Contents
 
-1.  [What is it?](#org414d821)
-2.  [How to use it?](#orga46c946)
-    1.  [Compile and install the package](#orgab5f275)
-    2.  [Mathematica side](#org5457032)
-3.  [Portability](#org26faa9e)
-4.  [How it works?](#org9ab33e3)
-    1.  [`meson.build`](#org6b18165)
-    2.  [`./src/meson.build`](#orgdd065d7)
-        1.  [`./src/myLib/meson.build`](#org84a4260)
-    3.  [`./mma/meson.build`](#org6d4664a)
-    4.  [`config.wls`](#orgb36462f)
-    5.  [Our cpp files](#orgf5fb030)
-        1.  [The `libmyLib.so` cpp files (our c++ library)](#orgf47325b)
-        2.  [The `libmyLibMMA.so` cpp files (our MMA wrapper)](#orgaac8af6)
-5.  [Useful references](#org4df5e4d)
+1.  [What is it?](#orgac0c1a4)
+2.  [News](#orgba2e0a9)
+3.  [How to use it?](#org9d1b69d)
+    1.  [Compile and install the package](#org3b1a277)
+    2.  [Mathematica side](#org466688e)
+4.  [Portability](#orgffe1777)
+5.  [How it works?](#org3988f78)
+    1.  [`meson.build`](#org96f9508)
+    2.  [`./src/meson.build`](#org0515b4f)
+        1.  [`./src/myLib/meson.build`](#orgbc4107a)
+    3.  [`./mma/meson.build`](#org87097e8)
+    4.  [`config.wls`](#org3f22ad2)
+    5.  [Our cpp files](#org707ed88)
+        1.  [The `libmyLib.so` cpp files (our c++ library)](#orgc98f943)
+        2.  [The `libmyLibMMA.so` cpp files (our MMA wrapper)](#org6b51f13)
+6.  [Useful references](#org5762547)
 
 
 
-<a id="org414d821"></a>
+<a id="orgac0c1a4"></a>
 
 # What is it?
 
@@ -29,6 +30,13 @@ developments](https://reference.wolfram.com/language/LibraryLink/tutorial/Intera
 
 The important files are:
 
+    + install/
+    	+ include/
+    		+ myLib/
+    			+ algorithm1.hpp
+    	+ lib/
+    		+ x86_64-linux-gnu/
+    			+ libmyLib.so
     + meson.build
     + mma/
     	+ algorithm1_mma.cpp
@@ -44,12 +52,19 @@ The important files are:
     		+ meson.build
 
 
-<a id="orga46c946"></a>
+<a id="orgba2e0a9"></a>
+
+# News
+
+-   <span class="timestamp-wrapper"><span class="timestamp">&lt;Tue Mar 26 2019&gt;</span></span> added support for MMA v10 (before only v11 was supported)
+
+
+<a id="org9d1b69d"></a>
 
 # How to use it?
 
 
-<a id="orgab5f275"></a>
+<a id="org3b1a277"></a>
 
 ## Compile and install the package
 
@@ -115,7 +130,7 @@ you will get something like:
 > install (invoked when you type `ninja install`).
 
 
-<a id="org5457032"></a>
+<a id="org466688e"></a>
 
 ## Mathematica side
 
@@ -143,7 +158,7 @@ it should print:
 > this function.
 
 
-<a id="org26faa9e"></a>
+<a id="orgffe1777"></a>
 
 # Portability
 
@@ -155,12 +170,12 @@ concerning this platform:
 -   [ ] Mathematica  + Windows ???
 
 
-<a id="org9ab33e3"></a>
+<a id="org3988f78"></a>
 
 # How it works?
 
 
-<a id="org6b18165"></a>
+<a id="org96f9508"></a>
 
 ## `meson.build`
 
@@ -174,37 +189,33 @@ concerning this platform:
     #----------------
     # MMA specific
     #----------------
-    mma_wolframscript = find_program('wolframscript')
     
-    if mma_wolframscript.found()
-      subdir('mma')
-    else
-      warning('Mathematica not found!')
-    endif
+    subdir('mma')
 
-The `src` directory contains a [regular C++ meson project](#orgdd065d7). 
+The `src` directory contains a [regular C++ meson project](#org0515b4f), which is
+compiled in a regular way.
 
-After having compiled it we test if the `wolframscript` executable is present, if so
-we move to the [`mma` directory](#org6d4664a). 
+After that we move to the [mma directory](#org87097e8) which is dedicated to the
+Mathematica part.
 
 > **Remark**: 
 > 
-> Even if the `wolframscript` executable is **not** present, the regular `libmylib.so` C++ library 
->  is properly compiled and installed.
+> Even if you do not have Mathematica installed, the C++ library (in the
+>  `./src/` directory) is properly compiled and installed.
 
 
-<a id="orgdd065d7"></a>
+<a id="org0515b4f"></a>
 
 ## `./src/meson.build`
 
-Ax explained, this is a regular C++ Meson project:
+As explained, this is a regular C++ Meson project:
 
     myLib_inc = include_directories('.')
     
     subdir('myLib')
 
 
-<a id="org84a4260"></a>
+<a id="orgbc4107a"></a>
 
 ### `./src/myLib/meson.build`
 
@@ -227,7 +238,7 @@ appending them to the `myLib_headers` and `myLib_sources` Meson variables.
     		subdir : 'myLib')
 
 
-<a id="org6d4664a"></a>
+<a id="org87097e8"></a>
 
 ## `./mma/meson.build`
 
@@ -236,8 +247,23 @@ This part is specific to MMA.
     #----------------
     # Extract MMA information 
     #----------------
-    maa_config = run_command(mma_wolframscript,'-f',files('config.wls'), check: true)
     
+    # try MMA v10 first
+    mma_wolframscript = find_program('MathematicaScript')
+    if mma_wolframscript.found()
+      maa_config = run_command(mma_wolframscript,'-script',files('config.wls'), check: true)
+    else
+      # then MMA v11
+      mma_wolframscript = find_program('wolframscript')
+      if mma_wolframscript.found()
+        maa_config = run_command(mma_wolframscript,'-f',files('config.wls'), check: true)
+      else
+        # no MMA? 
+        warning('Mathematica not found!')
+        subdir_done()
+      endif
+    endif
+        
     maa_config = maa_config.stdout().split(';')
     
     mma_include_directories = include_directories(maa_config.get(0).split(','))
@@ -269,7 +295,7 @@ This part is specific to MMA.
     
     install_data('myLib.wl', install_dir: mma_package_install_dir )
 
-In a **first step** we run the [`config.wls`](#orgb36462f) script to extract from MMA the
+In a **first step** we run the [`config.wls`](#org3f22ad2) script to extract from MMA the
 relevant information required by the Meson build process. These
 information are printed in a form easily readable by Meson:
 
@@ -281,7 +307,7 @@ These extracted information are stored into the `mma_include_directories`, `mma_
 
 In a **second step** we create the `libmylibMMA.so` dynamic library and also
 define its `rpath variable` to allow it to find the installed
-`libmyLib.so` library (see [Compile and install the package](#orgab5f275)).
+`libmyLib.so` library (see [Compile and install the package](#org3b1a277)).
 
 In a **third step** we define where the MMA package `myLib.wl` will be
 installed (here in the `mma_package_install_dir` default location).
@@ -289,7 +315,7 @@ installed (here in the `mma_package_install_dir` default location).
 That's it!
 
 
-<a id="orgb36462f"></a>
+<a id="org3f22ad2"></a>
 
 ## `config.wls`
 
@@ -309,14 +335,14 @@ Meson build process.
     Print[format[libraryLinkIncludeDirectories]<>";"<>libraryInstallDirectory<>";"<>packageInstallDirectory]
 
 
-<a id="orgf5fb030"></a>
+<a id="org707ed88"></a>
 
 ## Our cpp files
 
 This is really for demo purpose as we simply compute a scalar-vector product w=α.v
 
 
-<a id="orgf47325b"></a>
+<a id="orgc98f943"></a>
 
 ### The `libmyLib.so` cpp files (our c++ library)
 
@@ -349,7 +375,7 @@ The `./src/myLib/algorithm1.cpp` file:
     }  // namespace myLib
 
 
-<a id="orgaac8af6"></a>
+<a id="org6b51f13"></a>
 
 ### The `libmyLibMMA.so` cpp files (our MMA wrapper)
 
@@ -401,7 +427,7 @@ The `./mma/algorithm1_mma.cpp` file:
     }
 
 
-<a id="org4df5e4d"></a>
+<a id="org5762547"></a>
 
 # Useful references
 

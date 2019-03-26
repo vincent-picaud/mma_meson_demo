@@ -1,4 +1,5 @@
-build/**
+build
 *~
 /README.html
 install_dir
+install

@@ -11,7 +11,7 @@ developments]]. This GitHub repository is a small illustrative example.
 
 The important files are:
 #+BEGIN_SRC sh :results output drawer :exports results :wrap EXAMPLE
-orgTree.sh -P \* -I ".git|build|install_dir|*~|.gitignore|README*" --noLink
+orgTree.sh -P \* -I ".git|build|install*|*~|.gitignore|README*" --noLink
 #+END_SRC
 
 #+RESULTS:
@@ -21,6 +21,7 @@ orgTree.sh -P \* -I ".git|build|install_dir|*~|.gitignore|README*" --noLink
 	+ algorithm1_mma.cpp
 	+ config.wls
 	+ meson.build
+	+ myLib_mma.cpp
 	+ myLib.wl
 + src/
 	+ meson.build

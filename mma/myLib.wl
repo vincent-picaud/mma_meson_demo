@@ -20,7 +20,7 @@ myLibMMAfilename=If[$OperatingSystem=="Windows","myLibMMA","libmyLibMMA"];
 (*
 ,* Force library unload
 ,*)
-unload::usage="Unload the library (must be called to take into accound dynamic lib modifications)"
+unload::usage="Unload the library (must be called to take into account dynamic lib modifications)"
 unload[]:=LibraryUnload[myLibMMAfilename]
 
 (*

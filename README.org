@@ -252,12 +252,12 @@ cat ./mma/meson.build
 #----------------
 
 # try MMA v10 first
-mma_wolframscript = find_program('MathematicaScript')
+mma_wolframscript = find_program('MathematicaScript', required: false)
 if mma_wolframscript.found()
   maa_config = run_command(mma_wolframscript,'-script',files('config.wls'), check: true)
 else
   # then MMA v11
-  mma_wolframscript = find_program('wolframscript')
+  mma_wolframscript = find_program('wolframscript', required: false)
   if mma_wolframscript.found()
     maa_config = run_command(mma_wolframscript,'-f',files('config.wls'), check: true)
   else
@@ -471,5 +471,5 @@ extern "C" DLLEXPORT int algorithm1(WolframLibraryData libData, mint Argc, MArgu
 - https://github.com/arnoudbuzing/wolfram-librarylink-examples
 - [[https://www.youtube.com/watch?v=5Km3kXnCMUw&list=PLxn-kpJHbPx0VeBoNETYfeiHxsX0i-Dbl&index=65][NumericArray—Compact Representation of "Numeric" Arrays]] (youtube video)
 
-Note:* I also have written a bash-script to generate pure C++ project
+*Note:* I also have written a bash-script to generate pure C++ project
 templates (configured with gtest and doxygen): [[https://github.com/vincent-picaud/meson_starter_script][meson_starter_script]].

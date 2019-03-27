@@ -3,12 +3,12 @@
 #----------------
 
 # try MMA v10 first
-mma_wolframscript = find_program('MathematicaScript')
+mma_wolframscript = find_program('MathematicaScript', required: false)
 if mma_wolframscript.found()
   maa_config = run_command(mma_wolframscript,'-script',files('config.wls'), check: true)
 else
   # then MMA v11
-  mma_wolframscript = find_program('wolframscript')
+  mma_wolframscript = find_program('wolframscript', required: false)
   if mma_wolframscript.found()
     maa_config = run_command(mma_wolframscript,'-f',files('config.wls'), check: true)
   else

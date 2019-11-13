@@ -37,10 +37,6 @@ The important files are:
     	+ meson.build
     	+ myLib_mma.cpp
     	+ myLib.wl
-    + #README.org#
-    + .#README.org/
-    + /
-    + picaud@is231575.14739:1551087643/
     + src/
     	+ meson.build
     	+ myLib/
